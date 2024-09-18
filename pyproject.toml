@@ -1,0 +1,18 @@
+[project]
+name = "forumukas"
+version = "0.0.1"
+description = ""
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.1",
+    "pydantic>=2.8.2",
+    "beautifulsoup4>=4.12.3",
+    "nh3>=0.2.18",
+    "django-cache-memoize>=0.2.0",
+    "diskcache>=5.6.3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
