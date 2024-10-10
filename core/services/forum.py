@@ -68,10 +68,7 @@ class ForumService:
     @classmethod
     def get_threads(cls, limit: int = 25, page: int = 1) -> list[ThreadSchema]:
         # TODO: Should return from search engine sorted by score/date.
-        temp_test_threads = [
-            t.as_schema() for t in Thread.objects.all().order_by("-created_at")
-        ]
-        return temp_test_threads
+        return Thread.objects.all()
 
     @classmethod
     def search_threads(

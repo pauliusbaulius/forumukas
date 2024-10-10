@@ -1,25 +1,58 @@
 {% extends "core/base.html" %}
+{% block title %}New Thread - Forumukas{% endblock %}
 {% block main %}
-<h1>New Thread</h1>
-<div class="mt-4">
-    <form method="post" id="form">
-        {% csrf_token %}
-
-        <input type="hidden" name="tags" value="{{ tags }}">
-
-
-        <input type="text" name="title" placeholder="Title" required
-               value="{{ title }}"
-               class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-
-        <textarea name="content" rows="10" required
-                  class="mt-4 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="Write something useful here...">{{content}}</textarea>
-        <button type="submit"
-                class="mt-4 inline-flex items-center px-5 py-2.5 text-sm font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-blue-800">
-            Publish thread
-        </button>
-    </form>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1 class="mb-4">New Thread</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text"
+                       class="form-control"
+                       id="title"
+                       name="title"
+                       value="{{ title }}"
+                       required>
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">Content</label>
+                <div id="toolbar" class="mb-2"></div>
+                <div id="editor-container" class="form-control p-0" style="min-height: 200px;">
+                    <textarea class="form-control border-0" id="content" name="content" hidden required>{{ content }}</textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
 </div>
 
+<style>
+    #editor-container {
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+    }
+    #editor-container .tinyMDE-editor {
+        min-height: 200px;
+        padding: 0.375rem 0.75rem;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tinyMDE = new TinyMDE.Editor({
+            textarea: "content",
+            content_css: "body {padding: 10px;}"
+        });
+        const commandBar = new TinyMDE.CommandBar({
+            element: "toolbar",
+            editor: tinyMDE,
+        });
+
+        // Ensure the editor container gets focus styles when the editor is focused
+        const editorContainer = document.getElementById('editor-container');
+        tinyMDE.on('focus', () => editorContainer.classList.add('focus'));
+        tinyMDE.on('blur', () => editorContainer.classList.remove('focus'));
+    });
+</script>
 {% endblock main %}

@@ -1,39 +1,41 @@
 {% extends 'core/base.html' %}
 {% block title %}Forumukas Threads{% endblock title %}
 {% block main %}
+<div class="container py-4">
+    <h1 class="mb-4">Forum Threads</h1>
 
-<form class="mx-auto">
-    <label for="default-search"
-           class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
-    <div class="relative">
-        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
-                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                      stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-            </svg>
+    <form class="mb-4">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="will claude.ai replace me in 2025?"
+                   aria-label="Search">
+            <button class="btn btn-outline-secondary" type="submit">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                </svg>
+                Search
+            </button>
         </div>
-        <input type="search" id="default-search"
-               class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-               placeholder="Why does local infra break after git pull?" required/>
-        <button type="submit"
-                class="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-            Search
-        </button>
-    </div>
-</form>
+    </form>
 
-{% for thread in threads %}
-<a href="{% url 'thread' thread.pub_id %}"
-   class="mt-4 block w-full p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-        ({{ thread.replies_count }})
-        {{ thread.title|truncatechars:50 }}
-    </h5>
-    <p class="font-normal text-gray-700 dark:text-gray-400">
-        {{ thread.content|safe|truncatechars:200 }}
-    </p>
-    <small>Created by {{ thread.created_by }} - {{ thread.created_at|timesince }} ago</small>
-</a>
-{% endfor %}
+    {% for thread in threads %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title">
+                    <a href="{% url 'thread' thread_pub_id=thread.public_id %}" class="text-decoration-none">
+                        {{ thread.title|truncatechars:50 }}
+                    </a>
+                </h5>
+                <span class="badge bg-primary rounded-pill">{{ thread.count_replies }}</span>
+            </div>
+            <p class="card-text">{{ thread.content|truncatechars:200 }}</p>
+            <p class="card-text"><small class="text-muted">Created by {{ thread.created_by }} • {{ thread.created_at|timesince }} ago</small></p>
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-info" role="alert">
+        No threads found.
+    </div>
+    {% endfor %}
+</div>
 {% endblock main %}

@@ -2,6 +2,7 @@ import datetime
 import logging
 import uuid
 
+import markdown2
 import nh3
 import pydantic
 from django.conf import settings
@@ -18,7 +19,10 @@ class CustomUser(AbstractUser):
     # Blank custom user to allow for future customizations of the user
     # without big pain.
     # See: https://docs.djangoproject.com/en/5.1/topics/auth/customizing/#using-a-custom-user-model-when-starting-a-project
-    pass
+    email = models.EmailField(unique=True)
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
 
 
 @admin.register(CustomUser)
@@ -95,7 +99,11 @@ class Thread(BaseDbModelWithUser):
 
     def get_content(self) -> str:
         # First reply is the "content" of the thread.
-        return self.replies.first().get_clean_content()
+        return self.replies.first().get_content_as_html()
+
+    def count_replies(self) -> int:
+        amount_replies = self.replies.count()
+        return amount_replies - 1  if amount_replies > 0 else 0
 
     def as_schema(self) -> ThreadSchema:
         return ThreadSchema(
@@ -143,6 +151,7 @@ class ThreadTagAdmin(admin.ModelAdmin):
         url_to_instance("tag"),
     )
 
+
 class ReplySchema(pydantic.BaseModel):
     pub_id: str
     content: str
@@ -156,16 +165,8 @@ class Reply(BaseDbModelWithUser):
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name="replies")
     content = models.TextField()
 
-    # TODO: Idk ar reikes, ziurint nuo approach ar imsim rich text editor kuris saugo html,
-    #  ar saugosim md ir fe render md -> html.
-    def get_raw_content(self) -> str:
-        """Extract and return raw text w/o html tags from content.
-        Used in search indexing, see: https://typesense.org/docs/guide/tips-for-searching-common-types-of-data.html#html-content  # noqa
-        """
-        from bs4 import BeautifulSoup
-        soup = BeautifulSoup(self.content, "html.parser")
-        text = soup.get_text()
-        return text
+    def get_content_as_html(self) -> str:
+        return markdown2.markdown(self.content)
 
     def __str__(self) -> str:
         return str(self.id)
@@ -177,7 +178,7 @@ class Reply(BaseDbModelWithUser):
     def as_schema(self) -> ReplySchema:
         return ReplySchema(
             pub_id=str(self.public_id),
-            content=self.get_clean_content(),
+            content=self.get_content_as_html(),
             created_by=self.created_by.username,
             created_by_id=self.created_by.pk,
             created_at=self.created_at,
@@ -186,9 +187,6 @@ class Reply(BaseDbModelWithUser):
 
     def as_dict(self) -> dict:
         return self.as_schema().model_dump()
-
-    def get_clean_content(self) -> str:
-        return nh3.clean(self.content)
 
 
 @admin.register(Reply)

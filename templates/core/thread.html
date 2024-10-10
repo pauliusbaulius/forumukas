@@ -1,55 +1,45 @@
 {% extends 'core/base.html' %}
 {% block title %}Forumukas Thread {{ thread.pub_id }}{% endblock title %}
 {% block main %}
-<h1 class="text-2xl">{{ thread.title }}</h1>
-<small>{{ thread.pub_id }}</small>
-{% for reply in replies %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <h1 class="mb-2">{{ thread.title }}</h1>
+            <p class="text-muted mb-4">Thread ID: {{ thread.pub_id }}</p>
 
-
-<div
-        class="mt-4 w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-
-    <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
-        {{ reply.content|safe }}
-    </p>
-    <!--    {% if request.user.pk == reply.created_by_id %}-->
-    <!--    {% if forloop.first %}-->
-    <!--    <a href="" class="btn btn-sm">Edit</a>-->
-    <!--    <a href="" class="btn btn-sm">Delete Thread</a>-->
-
-    <!--    {% else %}-->
-    <!--    <a href="" class="btn btn-sm">Edit</a>-->
-    <!--    <a href="{% url 'delete-reply' thread_pub_id=thread.pub_id reply_pub_id=reply.pub_id %}"-->
-    <!--       class="btn btn-sm">Delete</a>-->
-    <!--    {% endif %}-->
-    <!--    {% endif %}-->
-    <small>Created by {{ reply.created_by }} - {{ reply.created_at|timesince }} ago</small>
-</div>
-{% endfor %}
-
-<div class="mt-4">
-
-    <form method="post">
-        {% csrf_token %}
-        <div class="w-full mb-4 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
-            <div class="px-4 py-2 bg-white rounded-t-lg dark:bg-gray-800">
-                <label for="content" class="sr-only">Your comment</label>
-                <textarea id="content" rows="4"
-                          name="content"
-                          class="w-full px-0 text-sm text-gray-900 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400"
-                          placeholder="Yapping goes here..." required></textarea>
+            {% for reply in replies %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="card-text">{{ reply.content|safe }}</div>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Posted by {{ reply.created_by }} - {{ reply.created_at|timesince }} ago</small>
+                        {% if request.user.pk == reply.created_by_id %}
+                        <div>
+                            {% if forloop.first %}
+                            <a href="#" class="btn btn-sm btn-outline-primary me-2">Edit</a>
+                            <a href="#" class="btn btn-sm btn-outline-danger">Delete Thread</a>
+                            {% else %}
+                            <a href="#" class="btn btn-sm btn-outline-primary me-2">Edit</a>
+                            <a href="{% url 'delete-reply' thread_pub_id=thread.pub_id reply_pub_id=reply.pub_id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
-            <div class="flex items-center justify-between px-3 py-2 border-t dark:border-gray-600">
-                <button type="submit"
-                        name="action"
-                        value="create_reply"
-                        class="inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-blue-700 rounded-lg focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900 hover:bg-blue-800">
-                    Post
-                </button>
-            </div>
+            {% endfor %}
+
+            <h2 class="mt-5 mb-4">Post a Reply</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <textarea class="form-control" rows="4" name="content" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
-
-
 {% endblock main %}

@@ -1,9 +1,43 @@
 from django.shortcuts import render, redirect
-
+from django.contrib.auth import authenticate, login
 from django.contrib import messages
+
+from core.models import CustomUser
 from core.services.forum import ForumService
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
+
+
+def _login(request):
+    template = "core/login.html"
+    context = {}
+
+    if request.method == "GET":
+        return render(request, template, context)
+
+    if request.method == "POST":
+        email = request.POST["email"]
+        password = request.POST["password"]
+
+        context["email"] = email
+
+        if not CustomUser.objects.filter(email=email).exists():
+            messages.add_message(
+                request=request,
+                level=messages.ERROR,
+                message="Invalid credentials!",
+            )
+            return render(request, template, context)
+
+        user = authenticate(request, email=email, password=password)
+
+        if user is not None:
+            login(request, user)
+            messages.success(request, "Login successful!")
+            return redirect('index')
+        else:
+            messages.error(request, "Invalid credentials!")
+            return render(request, template, context)
 
 
 @login_required
@@ -36,7 +70,7 @@ def new_thread(request):
         thread = ForumService.create_thread(
             title=request.POST["title"],
             content=request.POST["content"],
-            tags=request.POST["tags"].split(","),
+            tags=[],  #request.POST["tags"].split(","),
             user_id=request.user.id,
         )
 
@@ -45,7 +79,7 @@ def new_thread(request):
             context = {
                 "title": request.POST["title"],
                 "content": request.POST["content"],
-                "tags": request.POST["tags"],
+                #"tags": request.POST["tags"],
             }
             messages.error(request, "Thread title exists!")
             return render(request, template, context)
